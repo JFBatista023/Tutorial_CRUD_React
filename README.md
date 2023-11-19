@@ -44,3 +44,12 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+# Rodar o projeto
+Para rodar o projeto é essencial que seja feito a instalação dos recursos usados.
+
+```prompt de comando
+npm install @mui/material @emotion/react @emotion/styled
+```
+
+Em seguida pode ser usado o comando para se executar o projeto React, acessando-o pela http://localhost:3000

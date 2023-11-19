@@ -1,11 +1,40 @@
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Button, TextField, Container, Grid, Paper, Typography, ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './components/theme';
 
 const App = () => {
+  const URL = 'https://localhost:5432/'; //url da api
 
-  const handleCreate = () => {
-    
+  const [produto, setProduto] = useState({
+    nome: '',
+    descricao: '',
+    preco: ''
+  });
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setProduto({
+      ...produto,
+      [e.target.name] : e.target.value
+    });
   };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // para converter um obj em string json, tem que o instalar. npm install querystring-es3
+
+    fetch(
+      URL + 'produto',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'Application/json'
+        },
+        body: JSON.stringify(produto)        
+      }
+    )
+    .then(resposta => resposta.json())
+    .then(dado => console.log(dado))
+    .catch((msgErro) => console.error('Erro:', msgErro));
+  }
 
   const handleSearch = () => {
     
@@ -27,14 +56,15 @@ const App = () => {
           <Typography variant="h4" gutterBottom>
             Informações do Produto
           </Typography>
-          <form>
+          <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <TextField
                   label="Nome do Produto"
                   fullWidth
                   variant="outlined"
-                  name="name"
+                  name="nome"
+                  onChange={handleChange}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -42,7 +72,8 @@ const App = () => {
                   label="Descrição do Produto"
                   fullWidth
                   variant="outlined"
-                  name="description"
+                  name="descricao"
+                  onChange={handleChange}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -50,12 +81,13 @@ const App = () => {
                   label="Preço do Produto"
                   fullWidth
                   variant="outlined"
-                  name="price"
+                  name="preco"
+                  onChange={handleChange}
                 />
               </Grid>
               <Grid item xs={12} width={'100%'}>
                 <Grid container alignContent={'baseline'}>
-                  <Grid item><Button variant="contained" color="primary" onClick={handleCreate}>
+                  <Grid item><Button variant="contained" color="primary" type='submit'>
                     Criar
                   </Button></Grid>
                   <Grid item> <Button variant="contained" color="primary" onClick={handleSearch}>
