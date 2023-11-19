@@ -3,35 +3,56 @@ import { Button, TextField, Container, Grid, Paper, Typography, ThemeProvider, C
 import theme from './components/theme';
 
 const App = () => {
-  const URL = 'https://localhost:5432/'; //url da api
+  const URL = 'http://127.0.0.1:8000/api/'; //url da api
 
-  const [produto, setProduto] = useState({
+  const [produto, setProduto] = useState<{nome : string, imagem : File | null, preco : number}>({
     nome: '',
-    descricao: '',
-    preco: ''
+    preco: 0,
+    imagem: null,
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setProduto({
-      ...produto,
-      [e.target.name] : e.target.value
-    });
+    if (e.target.name === 'imagem'){
+      if (e.target.files) {
+        setProduto({
+          ...produto,
+          [e.target.name]: e.target.files[0]
+        });
+      }
+    }else if(e.target.name === 'preco'){
+      setProduto({
+        ...produto,
+        [e.target.name]: parseFloat(e.target.value)
+      });
+    }else{
+      setProduto({
+        ...produto,
+        [e.target.name] : e.target.value
+      });
+    }
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // para converter um obj em string json, tem que o instalar. npm install querystring-es3
+    const formData = new FormData();
+    if(produto.imagem === null) {
+      console.log("Adicione uma imagem");
+      return;
+    }
+    if(produto.nome === null) return;
+    if(produto.preco === null) return;
+
+    formData.append('nome', produto.nome);
+    formData.append('preco', produto.preco.toString());
+    formData.append('imagem', produto.imagem);
 
     fetch(
-      URL + 'produto',{
+      URL + 'produtos',{
         method: 'POST',
-        headers: {
-          'Content-Type': 'Application/json'
-        },
-        body: JSON.stringify(produto)        
+        body: formData
       }
     )
-    .then(resposta => resposta.json())
+    .then(resposta => resposta.text())
     .then(dado => console.log(dado))
     .catch((msgErro) => console.error('Erro:', msgErro));
   }
@@ -69,20 +90,18 @@ const App = () => {
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  label="Descrição do Produto"
-                  fullWidth
-                  variant="outlined"
-                  name="descricao"
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
                   label="Preço do Produto"
                   fullWidth
                   variant="outlined"
                   name="preco"
                   onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <input 
+                  type="file" 
+                  name="imagem" 
+                  onChange={handleChange} 
                 />
               </Grid>
               <Grid item xs={12} width={'100%'}>
