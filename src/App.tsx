@@ -1,4 +1,4 @@
-import { Button, TextField, Container, Grid, Paper, Typography, ThemeProvider } from '@mui/material';
+import { Button, TextField, Container, Grid, Paper, Typography, ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './components/theme';
 
 const App = () => {
@@ -20,7 +20,8 @@ const App = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme()}>
+      <CssBaseline />
       <Container style={{'padding': 20}}>
         <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
           <Typography variant="h4" gutterBottom>
@@ -52,7 +53,7 @@ const App = () => {
                   name="price"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} width={'100%'}>
                 <Grid container alignContent={'baseline'}>
                   <Grid item><Button variant="contained" color="primary" onClick={handleCreate}>
                     Criar
