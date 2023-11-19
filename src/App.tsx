@@ -39,15 +39,21 @@ const App = () => {
       console.log("Adicione uma imagem");
       return;
     }
-    if(produto.nome === null) return;
-    if(produto.preco === null) return;
+    if(produto.nome === null || produto.nome === '') {
+      console.log("Adicione um nome");
+      return;
+    }
+    if(produto.preco === null || produto.preco === 0) {
+      console.log("Adicione um preco");
+      return;
+    }
 
     formData.append('nome', produto.nome);
     formData.append('preco', produto.preco.toString());
     formData.append('imagem', produto.imagem);
 
     fetch(
-      URL + 'produtos',{
+      URL + 'produtos/',{
         method: 'POST',
         body: formData
       }
@@ -55,6 +61,7 @@ const App = () => {
     .then(resposta => resposta.text())
     .then(dado => console.log(dado))
     .catch((msgErro) => console.error('Erro:', msgErro));
+    alert('Produto adicionado com sucesso.')
   }
 
   const handleSearch = () => {
