@@ -3,12 +3,16 @@ import { Button, TextField, Container, Grid, Paper, Typography, ThemeProvider, C
 import theme from './components/theme';
 
 const App = () => {
-  const URL = 'http://127.0.0.1:8000/api/'; //url da api
+  const URL = 'http://127.0.0.1:8000'; //url da api
 
   const [produto, setProduto] = useState<{nome : string, imagem : File | null, preco : number}>({
     nome: '',
     preco: 0,
     imagem: null,
+  });
+
+  const [idProduto, setIdProduto] = useState<{id : number}>({
+    id : -1,
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -53,28 +57,52 @@ const App = () => {
     formData.append('imagem', produto.imagem);
 
     fetch(
-      URL + 'produtos/',{
+      URL + '/api/produtos/',{
         method: 'POST',
         body: formData
       }
     )
     .then(resposta => resposta.text())
-    .then(dado => console.log(dado))
+    .then(dado => {
+      console.log(dado);
+      alert('Produto adicionado com sucesso.');
+    })
     .catch((msgErro) => console.error('Erro:', msgErro));
-    alert('Produto adicionado com sucesso.')
   }
 
-  const handleSearch = () => {
-    
+  const handleChangeDelete = (e: ChangeEvent<HTMLInputElement>) => {
+   
+    setIdProduto({
+      ...idProduto,
+      [e.target.name]: e.target.value
+    });
+  }
+
+  const handleDelete = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if(idProduto.id === null || idProduto.id === -1){
+      console.log('Informe o id');
+    }
+
+    fetch(URL + '/api/produtos/' + idProduto.id.toString() + '/', {
+      method: 'DELETE',
+    })
+    .then(resposta => resposta.text())
+    .then(dado => console.log(dado))
+    .catch((msgErro) => console.error('Erro:', msgErro));
+  };
+
+  const handleChangeBusca = () => {
+  }
+
+  const handleBusca = () => {
   };
 
   const handleUpdate = () => {
     
   };
 
-  const handleDelete = () => {
-    
-  };
+  
 
   return (
     <ThemeProvider theme={theme()}>
@@ -82,7 +110,7 @@ const App = () => {
       <Container style={{'padding': 20}}>
         <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
           <Typography variant="h4" gutterBottom>
-            Informações do Produto
+            Adicionar Produto
           </Typography>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
@@ -111,19 +139,13 @@ const App = () => {
                   onChange={handleChange} 
                 />
               </Grid>
-              <Grid item xs={12} width={'100%'}>
+              <Grid item xs={12} style={{width: '100%'}}>
                 <Grid container alignContent={'baseline'}>
                   <Grid item><Button variant="contained" color="primary" type='submit'>
                     Criar
                   </Button></Grid>
-                  <Grid item> <Button variant="contained" color="primary" onClick={handleSearch}>
-                    Buscar
-                  </Button></Grid>
                   <Grid item> <Button variant="contained" color="primary" onClick={handleUpdate}>
                     Atualizar
-                  </Button></Grid>
-                  <Grid item><Button variant="contained" color="primary" onClick={handleDelete}>
-                    Deletar
                   </Button></Grid>
                 </Grid>
               </Grid>
@@ -131,8 +153,31 @@ const App = () => {
           </form>
         </Paper>
       </Container>
+      <Container style={{'padding': 20}}>
+        <Paper elevation={3} style={{ padding: '20px'}}>
+          <Typography variant="h4" gutterBottom>
+            Remover Produto
+          </Typography>
+          <form onSubmit={handleDelete}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  label="ID do produto"
+                  fullWidth
+                  variant="outlined"
+                  name="id"
+                  onChange={handleChangeDelete}
+                />
+              </Grid>
+              <Grid item><Button variant="contained" color="primary" type='submit'>
+                Deletar
+              </Button></Grid>
+            </Grid>
+          </form>
+        </Paper>
+      </Container>
     </ThemeProvider>
   );
-};
-
+  
+}
 export default App;
