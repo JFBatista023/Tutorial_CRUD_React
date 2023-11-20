@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { Button, TextField, Container, Grid, Paper, Typography, ThemeProvider, CssBaseline } from '@mui/material';
+import { Button, TextField, Container, Grid, Paper, Typography, ThemeProvider, CssBaseline, FormLabel } from '@mui/material';
 import theme from './components/theme';
 
 const App = () => {
@@ -11,9 +11,18 @@ const App = () => {
     imagem: null,
   });
 
+  const [produtoResgatado, setProdutoResgatado] = useState<{nome : string, imagem : string, preco : string}>({
+    nome: '',
+    preco: '',
+    imagem: '',
+  });
+
   const [idProduto, setIdProduto] = useState<{id : number}>({
     id : -1,
   });
+
+  const [resultadosVisiveis, setResultadosVisiveis] = useState(false);
+
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.name === 'imagem'){
@@ -36,7 +45,7 @@ const App = () => {
     }
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData();
     if(produto.imagem === null) {
@@ -56,18 +65,24 @@ const App = () => {
     formData.append('preco', produto.preco.toString());
     formData.append('imagem', produto.imagem);
 
-    fetch(
-      URL + '/api/produtos/',{
-        method: 'POST',
-        body: formData
+    try {
+      const resposta = await fetch(
+        URL + '/api/produtos/', {
+          method: 'POST',
+          body: formData
+        }
+      );
+
+      if(!resposta.ok){
+        alert('Erro ao adicionar produto.');
+        throw new Error(`HTTP error! status: ${resposta.status}`);
       }
-    )
-    .then(resposta => resposta.text())
-    .then(dado => {
+      const dado = await resposta.text();
       console.log(dado);
       alert('Produto adicionado com sucesso.');
-    })
-    .catch((msgErro) => console.error('Erro:', msgErro));
+    } catch (error) {
+      console.error('Erro:', error);
+    }
   }
 
   const handleChangeDelete = (e: ChangeEvent<HTMLInputElement>) => {
@@ -78,27 +93,79 @@ const App = () => {
     });
   }
 
-  const handleDelete = (e: FormEvent<HTMLFormElement>) => {
+  const handleDelete = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if(idProduto.id === null || idProduto.id === -1){
       console.log('Informe o id');
     }
 
-    fetch(URL + '/api/produtos/' + idProduto.id.toString() + '/', {
-      method: 'DELETE',
-    })
-    .then(resposta => resposta.text())
-    .then(dado => console.log(dado))
-    .catch((msgErro) => console.error('Erro:', msgErro));
+    try {
+      const resposta = await fetch(URL + '/api/produtos/' + idProduto.id.toString() + '/', {
+        method: 'DELETE',
+      });
+
+      if(!resposta.ok){
+        alert('Erro ao deletar produto. Verifique se o ID do produto está correto.');
+        throw new Error(`HTTP error! status: ${resposta.status}`);
+      }
+
+      const dado = await resposta.text();
+      console.log(dado);
+      alert('Produto removido com sucesso.');
+    } catch (error) {
+      console.error('Erro:', error);
+    }
   };
 
-  const handleChangeBusca = () => {
+  const handleChangeBusca = (e: ChangeEvent<HTMLInputElement>) => {
+    setIdProduto({
+      ...idProduto,
+      [e.target.name]: e.target.value
+    });
   }
 
-  const handleBusca = () => {
+  const handleBusca = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if(idProduto.id === -1 || idProduto.id === null){
+      console.log('Informe o ID do produto');
+      return;
+    }
+
+    try {
+      const resposta = await fetch(URL + '/api/produtos/' + idProduto.id + '/', {
+        method: 'GET'
+      });
+
+      if(!resposta.ok){
+        alert(`Erro ao encontrar o produto de ID ${idProduto}. Verifique se o ID do produto está correto.`);
+        throw new Error(`HTTP error! status: ${resposta.status}`);
+      }
+
+      const dados = await resposta.json();
+      console.log('json: ', dados);
+      if (dados.length > 0) {
+        const produtoEncontrado = dados[0];
+        setProdutoResgatado({
+          nome: produtoEncontrado.nome,
+          preco: produtoEncontrado.preco,
+          imagem: produtoEncontrado.imagem,
+        });
+        console.log('link encontrado:' + URL + produtoEncontrado.imagem);
+
+        setResultadosVisiveis(true); // Mostra os resultados após a busca
+      } else {
+        alert(`Erro ao encontrar o produto de ID ${idProduto.id}. Verifique se o ID do produto está correto.`);
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+    }
   };
 
-  const handleUpdate = () => {
+  const handleChangeAtualizar = (e : ChangeEvent<HTMLInputElement>) => {
+
+  };
+
+  const handleAtualiza = () => {
     
   };
 
@@ -144,7 +211,7 @@ const App = () => {
                   <Grid item><Button variant="contained" color="primary" type='submit'>
                     Criar
                   </Button></Grid>
-                  <Grid item> <Button variant="contained" color="primary" onClick={handleUpdate}>
+                  <Grid item><Button variant="contained" color="primary" onClick={handleAtualiza}>
                     Atualizar
                   </Button></Grid>
                 </Grid>
@@ -174,6 +241,44 @@ const App = () => {
               </Button></Grid>
             </Grid>
           </form>
+        </Paper>
+      </Container>
+      <Container style={{'padding': 20}}>
+        <Paper elevation={3} style={{ padding: '20px'}}>
+          <Typography variant="h4" gutterBottom>
+            Buscar por Produto
+          </Typography>
+          <form onSubmit={handleBusca}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  label="ID do produto"
+                  fullWidth
+                  variant="outlined"
+                  name="id"
+                  onChange={handleChangeBusca}
+                />
+              </Grid>
+              <Grid item><Button variant="contained" color="primary" type='submit'>
+                Buscar
+              </Button></Grid>
+            </Grid>
+          </form>
+          {resultadosVisiveis && (
+            <Grid container spacing={3} style={{ width: '100%', marginTop: '20px' }}>
+              <Grid item xs={3}>
+                <img src={URL + produtoResgatado.imagem} alt={produtoResgatado.nome} style={{maxWidth: '100%'}} />
+              </Grid>
+              <Grid item xs={9} container direction="column" justifyContent="flex-start">
+                <Grid item style={{marginTop: '20px'}}>
+                  <FormLabel>Nome: {produtoResgatado.nome}.</FormLabel>
+                </Grid>
+                <Grid item style={{marginTop: '10px'}}>
+                  <FormLabel>Preço: {produtoResgatado.preco} reais (BR).</FormLabel>
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
         </Paper>
       </Container>
     </ThemeProvider>
