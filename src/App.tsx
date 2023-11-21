@@ -3,7 +3,7 @@ import { Button, TextField, Container, Grid, Paper, Typography, ThemeProvider, C
 import theme from './components/theme';
 
 const App = () => {
-  const URL = 'http://127.0.0.1:8000'; //url da api
+  const URL = 'http://127.0.0.1:8000';
 
   const [produto, setProduto] = useState<{nome : string, imagem : File | null, preco : number}>({
     nome: '',
@@ -17,12 +17,18 @@ const App = () => {
     imagem: '',
   });
 
+  const [novoDado, setNovoDado] = useState<{id: number, nome : string, imagem : File | null, preco : number}>({
+    id: -1,
+    nome: '',
+    preco: 0,
+    imagem: null,
+  });
+
   const [idProduto, setIdProduto] = useState<{id : number}>({
     id : -1,
   });
 
   const [resultadosVisiveis, setResultadosVisiveis] = useState(false);
-
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.name === 'imagem'){
@@ -48,16 +54,16 @@ const App = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData();
-    if(produto.imagem === null) {
-      console.log("Adicione uma imagem");
-      return;
-    }
     if(produto.nome === null || produto.nome === '') {
-      console.log("Adicione um nome");
+      alert("Adicione um nome");
       return;
     }
     if(produto.preco === null || produto.preco === 0) {
-      console.log("Adicione um preco");
+      alert("Adicione um preco");
+      return;
+    }
+    if(produto.imagem === null) {
+      alert("Adicione uma imagem");
       return;
     }
 
@@ -77,8 +83,7 @@ const App = () => {
         alert('Erro ao adicionar produto.');
         throw new Error(`HTTP error! status: ${resposta.status}`);
       }
-      const dado = await resposta.text();
-      console.log(dado);
+      
       alert('Produto adicionado com sucesso.');
     } catch (error) {
       console.error('Erro:', error);
@@ -109,9 +114,16 @@ const App = () => {
         throw new Error(`HTTP error! status: ${resposta.status}`);
       }
 
-      const dado = await resposta.text();
-      console.log(dado);
       alert('Produto removido com sucesso.');
+      if (idProduto.id === novoDado.id){
+        setNovoDado({
+          id: -1,
+          nome: '',
+          preco: 0,
+          imagem: null,
+        });
+        setResultadosVisiveis(false);
+      }
     } catch (error) {
       console.error('Erro:', error);
     }
@@ -141,8 +153,12 @@ const App = () => {
         throw new Error(`HTTP error! status: ${resposta.status}`);
       }
 
+      setNovoDado({
+        ...novoDado,
+        'id': idProduto.id
+      });
       const dados = await resposta.json();
-      console.log('json: ', dados);
+      
       if (dados.length > 0) {
         const produtoEncontrado = dados[0];
         setProdutoResgatado({
@@ -150,9 +166,8 @@ const App = () => {
           preco: produtoEncontrado.preco,
           imagem: produtoEncontrado.imagem,
         });
-        console.log('link encontrado:' + URL + produtoEncontrado.imagem);
 
-        setResultadosVisiveis(true); // Mostra os resultados após a busca
+        setResultadosVisiveis(true);
       } else {
         alert(`Erro ao encontrar o produto de ID ${idProduto.id}. Verifique se o ID do produto está correto.`);
       }
@@ -162,14 +177,67 @@ const App = () => {
   };
 
   const handleChangeAtualizar = (e : ChangeEvent<HTMLInputElement>) => {
-
+    if (e.target.name === 'imagem'){
+      if (e.target.files) {
+        setNovoDado({
+          ...novoDado,
+          [e.target.name]: e.target.files[0]
+        });
+      }
+    }else if(e.target.name === 'preco'){
+      setNovoDado({
+        ...novoDado,
+        [e.target.name]: parseFloat(e.target.value)
+      });
+    }else{
+      setNovoDado({
+        ...novoDado,
+        [e.target.name] : e.target.value
+      });
+    }
   };
 
-  const handleAtualiza = () => {
-    
-  };
+  const handleAtualiza = async (e : FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData();
+    let tem_dado = false;
+    if(novoDado.nome !== '' && novoDado.nome !== null){
+      formData.append('nome',novoDado.nome);
+      tem_dado = true;
+    }
+    if(novoDado.preco !== 0 && novoDado.preco !== null){
+      formData.append('preco',novoDado.preco.toString());
+      if(!tem_dado) tem_dado = true;
+    }
+    if(novoDado.imagem !== null){
+      formData.append('imagem',novoDado.imagem);
+      if(!tem_dado) tem_dado = true;
+    }
 
+    if(tem_dado){
+      try {
+        const resposta = await fetch(
+          URL + '/api/produtos/' + novoDado.id + '/', {
+            method: 'PATCH',
+            body: formData
+          }
+        );
   
+        if(!resposta.ok){
+          alert('Erro ao adicionar produto.');
+          throw new Error(`HTTP error! status: ${resposta.status}`);
+        }
+
+        setResultadosVisiveis(false);
+
+        alert('Produto atualizado com sucesso.');
+      } catch (error) {
+        console.error('Erro:', error);
+      }
+    }else{
+      alert(`Preencha ao menos 1 campo para atualizar o produto de ID ${novoDado.id}.`)
+    }
+  };
 
   return (
     <ThemeProvider theme={theme()}>
@@ -206,16 +274,9 @@ const App = () => {
                   onChange={handleChange} 
                 />
               </Grid>
-              <Grid item xs={12} style={{width: '100%'}}>
-                <Grid container alignContent={'baseline'}>
-                  <Grid item><Button variant="contained" color="primary" type='submit'>
-                    Criar
-                  </Button></Grid>
-                  <Grid item><Button variant="contained" color="primary" onClick={handleAtualiza}>
-                    Atualizar
-                  </Button></Grid>
-                </Grid>
-              </Grid>
+              <Grid item xs={12} style={{width: '100%'}}><Button variant="contained" color="primary" type='submit'>
+                Criar
+              </Button></Grid>
             </Grid>
           </form>
         </Paper>
@@ -265,17 +326,58 @@ const App = () => {
             </Grid>
           </form>
           {resultadosVisiveis && (
-            <Grid container spacing={3} style={{ width: '100%', marginTop: '20px' }}>
-              <Grid item xs={3}>
-                <img src={URL + produtoResgatado.imagem} alt={produtoResgatado.nome} style={{maxWidth: '100%'}} />
+            <Grid>
+              <Grid container spacing={3} style={{ width: '100%', marginTop: '20px' }}>
+                <Grid item xs={3}>
+                  <img src={URL + produtoResgatado.imagem} alt={produtoResgatado.nome} style={{maxWidth: '100%'}} />
+                </Grid>
+                <Grid item xs={9} container direction="column" justifyContent="flex-start">
+                  <Grid item style={{marginTop: '20px'}}>
+                    <FormLabel>Nome: {produtoResgatado.nome}.</FormLabel>
+                  </Grid>
+                  <Grid item style={{marginTop: '10px'}}>
+                    <FormLabel>Preço: {produtoResgatado.preco} reais (BR).</FormLabel>
+                  </Grid>
+                </Grid>
               </Grid>
-              <Grid item xs={9} container direction="column" justifyContent="flex-start">
-                <Grid item style={{marginTop: '20px'}}>
-                  <FormLabel>Nome: {produtoResgatado.nome}.</FormLabel>
+              <Grid container>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>
+                    Atualizar informações do produto
+                  </Typography>
                 </Grid>
-                <Grid item style={{marginTop: '10px'}}>
-                  <FormLabel>Preço: {produtoResgatado.preco} reais (BR).</FormLabel>
-                </Grid>
+                <form onSubmit={handleAtualiza}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Nome do Produto"
+                        fullWidth
+                        variant="outlined"
+                        name="nome"
+                        onChange={handleChangeAtualizar}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        label="Preço do Produto"
+                        fullWidth
+                        variant="outlined"
+                        name="preco"
+                        onChange={handleChangeAtualizar}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <input 
+                        type="file" 
+                        name="imagem" 
+                        onChange={handleChangeAtualizar} 
+                      />
+                    </Grid>
+                    <Grid item><Button variant="contained" color="primary" type='submit'>
+                      Atualizar
+                    </Button></Grid>
+                  </Grid>
+                </form>
               </Grid>
             </Grid>
           )}

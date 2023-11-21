@@ -1,56 +1,44 @@
-# Getting Started with Create React App
+# ReactJS - Tutorial Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Este é um projeto simples de gerenciamento de produtos implementado utilizando React como biblioteca principal para construção da interface do usuário. O Visual Studio Code (VSCode) foi escolhido como ambiente de desenvolvimento, proporcionando uma experiência de codificação eficiente. A estilização da aplicação foi facilitada pelo uso da biblioteca Material-UI, que oferece uma ampla variedade de componentes e estilos predefinidos.
 
-## Available Scripts
+## Funcionalidades 
 
-In the project directory, you can run:
+A aplicação foi desenvolvida para testar as operações básicas do CRUD (Create, Read, Update, Delete) em um banco de dados por meio de uma API. As funcionalidades incluem:
 
-### `npm start`
+- Cadastro de Produtos: Adição de novos produtos com informações como nome, descrição e preço.
+- Lista informações do produto: visualizar informações de um produto usando seu ID como referência.
+- Atualização de produtos: Edição das informações do produto (nome, preço e imagem).
+- Exclusão de Produtos: Remoção de produtos do banco de dados.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+> **Observação**
+>
+>O banco de dados usado para guardar as informações da API foi o Postgres
+>
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Configuração do ambiente
 
-### `npm test`
+Antes de rodar o projeto, é necessário garantir que o ambiente de desenvolvimento esteja configurado corretamente. Certifique-se de ter o seguinte instalado:
+- Node.js e npm: Certifique-se de ter o Node.js instalado na sua máquina. O npm (Node Package Manager) é geralmente instalado junto. Você pode baixar o Node.js em https://nodejs.org/.
+- Visual Studio Code: Este projeto foi desenvolvido no Visual Studio Code, um ambiente de desenvolvimento leve e altamente configurável. Você pode baixá-lo em https://code.visualstudio.com/.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Rodar o projeto
 
-### `npm run build`
+Para rodar o projeto é essencial que seja seguido os seguintes passos:
+1. Clonar o repositório
+```git bash
+git clone https://github.com/JFBatista023/Tutorial_CRUD_React.git
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-## ReactJS - Tutorial Frontend
-
-# Rodar o projeto
-Para rodar o projeto é essencial que seja feito a instalação dos recursos usados.
-
-```prompt de comando
+2. Estando na raíz do projeto, instalar as dependências do node e do pacote do materialUI
+```console
+npm install
 npm install @mui/material @emotion/react @emotion/styled
 ```
 
-Em seguida pode ser usado o comando para se executar o projeto React, acessando-o pela http://localhost:3000
+3. Rodar o projeto
+```console
+npm start
+```
+
+No console será mostrado a URL a ser usada no Navegador para a visualização do projeto.
